@@ -32,9 +32,9 @@ const db = require("../../Models/db");
 
 const getRoleAssignByRoleID = (req, res) => {
 
-    // const sqlQuery = 'SELECT * FROM AdminRoleAssign WHERE roleId = ?';
+    const sqlQuery = 'SELECT * FROM AdminRoleAssign WHERE roleId = ?';
 
-    const sqlQuery = 'SELECT getAdminRoleAssign(?)';                            // STORED FUNCTION
+    // const sqlQuery = 'SELECT getAdminRoleAssign(?)';                            // STORED FUNCTION
 
     db.query(sqlQuery, req.params.roleId, (err, result) => {
         if(err){
@@ -51,9 +51,9 @@ const getRoleAssignByRoleID = (req, res) => {
 
 const getRoleAssignByUserId = (req, res) => {
 
-    // const sqlQuery = 'SELECT * FROM AdminRoleAssign WHERE roleId AND userId = ?';
+    const sqlQuery = 'SELECT * FROM AdminRoleAssign WHERE roleId AND userId = ?';
 
-    const sqlQuery = 'CALL GetRoleAssignByUserId(?, ?)';                        // STORED PROCEDURE
+    // const sqlQuery = 'CALL GetRoleAssignByUserId(?, ?)';                        // STORED PROCEDURE
     const roleId = req.query.roleId;
     const userId = req.query.userId;
     
@@ -74,9 +74,9 @@ const getRoleAssignByUserId = (req, res) => {
 
 const deleteRoleAssign = (req, res) => {
 
-    // const sqlQuery = 'DELETE FROM AdminRoleAssign WHERE roleId = ? AND userId = ?';
+    const sqlQuery = 'DELETE FROM AdminRoleAssign WHERE roleId = ? AND userId = ?';
 
-    const sqlQuery = 'CALL deleteAdminRoleAssign(?, ?)';                        // STORED PROCEDURE
+    // const sqlQuery = 'CALL deleteAdminRoleAssign(?, ?)';                        // STORED PROCEDURE
     const roleId = req.query.roleId;
     const userId = req.query.userId;
     db.query(sqlQuery, [roleId, userId], (err, result) => {

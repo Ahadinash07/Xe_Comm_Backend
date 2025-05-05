@@ -5,9 +5,9 @@ const db = require("../../Models/db");
 
 const addAdminRole = (req, res) => {
     const {roleId, roleName} = req.body;
-    // const sqlQuery = 'INSERT INTO AdminRole SET roleId = ?, roleName = ?';
+    const sqlQuery = 'INSERT INTO AdminRole SET roleId = ?, roleName = ?';
 
-    const sqlQuery = 'SELECT addAdminRole(?, ?)';                                       // STORED FUNCTION
+    // const sqlQuery = 'SELECT addAdminRole(?, ?)';                                       // STORED FUNCTION
 
     db.query(sqlQuery, [roleId, roleName], (err, result) => {
         if(err){
@@ -70,9 +70,9 @@ const updateAdminRole = (req, res) => {
     const { roleId, roleName } = req.body;
     
     
-    // const sqlQuery = 'UPDATE AdminRole SET roleName = ? WHERE roleId = ?';
+    const sqlQuery = 'UPDATE AdminRole SET roleName = ? WHERE roleId = ?';
 
-    const sqlQuery = 'CALL updateAdminRole(?, ?)';                                      // STORED PROCEDURE
+    // const sqlQuery = 'CALL updateAdminRole(?, ?)';                                      // STORED PROCEDURE
 
     db.query(sqlQuery, [roleId, roleName], (err, result) => {
         // console.log(roleId, roleName);
@@ -90,9 +90,9 @@ const updateAdminRole = (req, res) => {
 // ===========================Delete==========================Admin=============================Role==============================
 
 const deleteAdminRole = (req, res) => {
-    // const sqlQuery = 'DELETE FROM AdminRole WHERE roleId = ?';
+    const sqlQuery = 'DELETE FROM AdminRole WHERE roleId = ?';
 
-    const sqlQuery = 'SELECT deleteAdminRole(?)'                                        // STORED FUNCTION
+    // const sqlQuery = 'SELECT deleteAdminRole(?)'                                        // STORED FUNCTION
 
     db.query(sqlQuery, [req.params.roleId], (err, result) => {
         if(err){

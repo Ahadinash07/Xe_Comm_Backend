@@ -9,97 +9,70 @@ env.config();
 // ===========================Admin==========================User=============================Registration==============================
 
 
-// const adminUserRegistration = (req, res) => {
-//     const { userId, userName, email, password } = req.body;
-
-//     const sqlQuery = 'INSERT INTO AdminUserRegistration (userId, userName, email, password) VALUES (?, ?, ?, ?)';
-//     const sqlQuery1 = 'SELECT * FROM AdminUserRegistration WHERE email = ?';
-
-//     bcrypt.hash(password, 10, (err, hashedPassword) => {
-//         if (err) {
-//             return res.json({ message: "Error hashing password" });
-//         }
-
-//         db.query(sqlQuery1, [email], (err, result) => { 
-//             if (result.length) {
-//                 return res.json({ message: "User already exists" });
-//             }
-
-//             db.query(sqlQuery, [userId, userName, email, hashedPassword], (err, result) => {
-//                 if (err) {
-//                     return res.json({ error: err });
-//                 } else {
-//                     return res.json({ message: "User registered successfully", result });
-//                 }
-//             });
-//         });
-//     });
-// };
-
-// ===========================Admin==========================User=============================Registration==============================
-
-
 const adminUserRegistration = (req, res) => {
     const { userId, userName, email, password } = req.body;
 
-    const sqlQuery = 'SELECT CheckAdminUserExists(?)';                                      // STORED FUNCTION
-    const sqlQuery1 = 'SELECT RegisterAdminUser(?, ?, ?, ?)';                               // STORED FUNCTION
+    const sqlQuery = 'INSERT INTO AdminUserRegistration (userId, userName, email, password) VALUES (?, ?, ?, ?)';
+    const sqlQuery1 = 'SELECT * FROM AdminUserRegistration WHERE email = ?';
 
     bcrypt.hash(password, 10, (err, hashedPassword) => {
         if (err) {
             return res.json({ message: "Error hashing password" });
         }
 
-        db.query(sqlQuery, [email], (err, result) => {
-            if (err) {
-                return res.json({ error: err });
+        db.query(sqlQuery1, [email], (err, result) => { 
+            if (result.length) {
+                return res.json({ message: "User already exists" });
             }
 
-            if (result[0]['CheckAdminUserExists'] > 0) {
-                return res.json({ message: `User already exists` });
-            }
-
-            db.query(sqlQuery1, [userId, userName, email, hashedPassword], (err, result) => {
-                // console.log(result);
+            db.query(sqlQuery, [userId, userName, email, hashedPassword], (err, result) => {
                 if (err) {
-                    if (err.code === 'ER_DUP_ENTRY') {
-                        return res.json({ message: `User already exists with this ${email}` });
-                    }
                     return res.json({ error: err });
+                } else {
+                    return res.json({ message: "User registered successfully", result });
                 }
-
-                return res.json({ message: "User registered successfully" });
             });
         });
     });
 };
 
+// ===========================Admin==========================User=============================Registration==============================
 
 
-// ===========================Admin==========================User=============================Login==============================
+// const adminUserRegistration = (req, res) => {
+//     const { userId, userName, email, password } = req.body;
 
+//     const sqlQuery = 'SELECT CheckAdminUserExists(?)';                                      // STORED FUNCTION
+//     const sqlQuery1 = 'SELECT RegisterAdminUser(?, ?, ?, ?)';                               // STORED FUNCTION
 
-// const adminUserLogin = (req, res) => {
-//     const {email, password} = req.body;
+//     bcrypt.hash(password, 10, (err, hashedPassword) => {
+//         if (err) {
+//             return res.json({ message: "Error hashing password" });
+//         }
 
-//     const sqlQuery = 'SELECT * FROM AdminUserRegistration WHERE email = ?';
-//     const updateQuery = 'UPDATE AdminUserRegistration SET status = "Active" WHERE email = ?';
+//         db.query(sqlQuery, [email], (err, result) => {
+//             if (err) {
+//                 return res.json({ error: err });
+//             }
 
-//     db.query(sqlQuery, [email], async (err, result) => {
-//         if(err || result.length === 0) return res.json({error: "Invalid credentials"});
+//             if (result[0]['CheckAdminUserExists'] > 0) {
+//                 return res.json({ message: `User already exists` });
+//             }
 
-//         const user = result[0];
-//             const isMatch = await bcrypt.compare(password, user.password);
-//             if(!isMatch) return res.json({error: "Invalid credentials"});
+//             db.query(sqlQuery1, [userId, userName, email, hashedPassword], (err, result) => {
+//                 // console.log(result);
+//                 if (err) {
+//                     if (err.code === 'ER_DUP_ENTRY') {
+//                         return res.json({ message: `User already exists with this ${email}` });
+//                     }
+//                     return res.json({ error: err });
+//                 }
 
-//             const token = jwt.sign({id: user.email}, process.env.JWT_SECRET, { expiresIn: '1h' });
-//             // console.log(token);
-
-//         db.query(updateQuery, [user.email], () => {});
-//         res.json(token);
-        
+//                 return res.json({ message: "User registered successfully" });
+//             });
+//         });
 //     });
-// }
+// };
 
 
 
@@ -107,24 +80,51 @@ const adminUserRegistration = (req, res) => {
 
 
 const adminUserLogin = (req, res) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
-    const sqlQuery = 'CALL LoginAdminUser(?)';                                                  // STORED PROCEDURE
+    const sqlQuery = 'SELECT * FROM AdminUserRegistration WHERE email = ?';
+    const updateQuery = 'UPDATE AdminUserRegistration SET status = "Active" WHERE email = ?';
 
     db.query(sqlQuery, [email], async (err, result) => {
-        // console.log(result);
+        if(err || result.length === 0) return res.json({error: "Invalid credentials"});
 
-        if (err || !result[0][0].user) return res.json({ error: "Invalid credentials" });
+        const user = result[0];
+            const isMatch = await bcrypt.compare(password, user.password);
+            if(!isMatch) return res.json({error: "Invalid credentials"});
 
-        const user = result[0][0].user;
+            const token = jwt.sign({id: user.email}, process.env.JWT_SECRET, { expiresIn: '1h' });
+            // console.log(token);
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.json({ error: "Invalid credentials" });
-
-        const token = jwt.sign({ id: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
+        db.query(updateQuery, [user.email], () => {});
+        res.json(token);
+        
     });
-};
+}
+
+
+
+// ===========================Admin==========================User=============================Login==============================
+
+
+// const adminUserLogin = (req, res) => {
+//     const { email, password } = req.body;
+
+//     const sqlQuery = 'CALL LoginAdminUser(?)';                                                  // STORED PROCEDURE
+
+//     db.query(sqlQuery, [email], async (err, result) => {
+//         // console.log(result);
+
+//         if (err || !result[0][0].user) return res.json({ error: "Invalid credentials" });
+
+//         const user = result[0][0].user;
+
+//         const isMatch = await bcrypt.compare(password, user.password);
+//         if (!isMatch) return res.json({ error: "Invalid credentials" });
+
+//         const token = jwt.sign({ id: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+//         res.json({ token });
+//     });
+// };
 
 
 
@@ -132,9 +132,9 @@ const adminUserLogin = (req, res) => {
 
 const adminUserLogout = (req, res) => {
     const {userId} = req.body;
-    // const sqlQuery = 'UPDATE AdminUserRegistration SET status = "Inactive" WHERE userId = ?';
+    const sqlQuery = 'UPDATE AdminUserRegistration SET status = "Inactive" WHERE userId = ?';
 
-    const sqlQuery = 'SELECT LogoutAdminUserStatus(?)';                                         // STORED FUNCTION
+    // const sqlQuery = 'SELECT LogoutAdminUserStatus(?)';                                         // STORED FUNCTION
 
     db.query(sqlQuery, [userId], (err, result) => {
         // console.log(result);
@@ -207,9 +207,9 @@ const adminUserUpdate = (req, res) => {
   
 const updateUserPassword = (req, res) => {
     const {email, password} = req.body;
-    // const sqlQuery = 'UPDATE AdminUserRegistration SET password = ? WHERE email = ?';    
+    const sqlQuery = 'UPDATE AdminUserRegistration SET password = ? WHERE email = ?';    
 
-    const sqlQuery = 'SELECT UpdateAdminUserPasswordByEmail(?, ?)';                                 // STORED FUNCTION
+    // const sqlQuery = 'SELECT UpdateAdminUserPasswordByEmail(?, ?)';                                 // STORED FUNCTION
 
     bcrypt.hash(password, 10, (err, hashedPassword) => {
         // console.log(password);
@@ -279,11 +279,11 @@ const updateUserAdminStatus = (req, res) => {
 
 const getAdminUser = (req, res) => {
 
-    // const sqlQuery = 'SELECT userId, userName, email, status, Registred_at FROM AdminUserRegistration';
+    const sqlQuery = 'SELECT userId, userName, email, status, Registred_at FROM AdminUserRegistration';
 
     // const sqlQuery = 'SELECT GetAdminUser()';                                               // STORED FUNCTION
 
-    const sqlQuery = 'CALL GetAdminUserRegistration()';                                     // STORED PROCEDURE
+    // const sqlQuery = 'CALL GetAdminUserRegistration()';                                     // STORED PROCEDURE
     
     db.query(sqlQuery, (err, result) => {
         if(err){
@@ -299,9 +299,9 @@ const getAdminUser = (req, res) => {
 // ===========================Admin==========================User=============================Get==============================ById=============
 
 const getAdminUserById = (req, res) => {
-    // const sqlQuery = 'SELECT userId, userName, email, status FROM AdminUserRegistration WHERE userId = ?';
+    const sqlQuery = 'SELECT userId, userName, email, status FROM AdminUserRegistration WHERE userId = ?';
 
-    const sqlQuery = 'SELECT GetAdminUserById(?)';                                           // STORED FUNCTION
+    // const sqlQuery = 'SELECT GetAdminUserById(?)';                                           // STORED FUNCTION
 
     db.query(sqlQuery, [req.params.userId], (err, result) => {
         if(err){
@@ -317,9 +317,9 @@ const getAdminUserById = (req, res) => {
 // ===========================Admin==========================User=============================Delete==============================ById=============
 
 const deleteAdminUser = (req, res) => {
-    // const sqlQuery = 'DELETE FROM AdminUserRegistration WHERE userId = ?';
+    const sqlQuery = 'DELETE FROM AdminUserRegistration WHERE userId = ?';
 
-    const sqlQuery = 'SELECT DeleteAdminUser(?)';                                           // STORED FUNCTION
+    // const sqlQuery = 'SELECT DeleteAdminUser(?)';                                           // STORED FUNCTION
 
     db.query(sqlQuery,[req.params.userId], (err, result) => {
         if(err){

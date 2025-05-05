@@ -2,8 +2,8 @@ const db = require('../../Models/db');
 
 
 const GetCategories = (req, res) => {
-    const sqlQuery = 'CALL GetAllCategory()';
-    // const sqlQuery = 'SELECT * FROM category';
+    // const sqlQuery = 'CALL GetAllCategory()';
+    const sqlQuery = 'SELECT * FROM category';
     db.query(sqlQuery, (err, result) => {
         if(err) {
             console.log(err);
@@ -14,8 +14,8 @@ const GetCategories = (req, res) => {
 }
 
 const GetCategoriesByCatId = (req, res) => {
-    // const sqlQuery = 'SELECT * FROM category WHERE catId = ?';
-    const sqlQuery = 'CALL GetCategoryByID(?)';
+    const sqlQuery = 'SELECT * FROM category WHERE catId = ?';
+    // const sqlQuery = 'CALL GetCategoryByID(?)';
     const catId = req.params.catId;
     db.query(sqlQuery, catId, (err, result) => {
         if(err) {
@@ -28,8 +28,8 @@ const GetCategoriesByCatId = (req, res) => {
 
 const AddCategory = (req, res) => {     
     const { catId, catName } = req.body;
-    const sqlQuery = 'CALL AddCategory(?)';
-    // const sqlQuery = 'INSERT INTO category (catId, catName) VALUES (UUID(),?)'
+    // const sqlQuery = 'CALL AddCategory(?)';
+    const sqlQuery = 'INSERT INTO category (catId, catName) VALUES (UUID(),?)'
     db.query(sqlQuery, [catName], (err, result) => {
         if(err) {
             console.log(err);
