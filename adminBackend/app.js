@@ -20,7 +20,7 @@ const app = express();
 env.config();
 // app.use(cors());
 app.use(cors({
-    origin: "https://xecommfrontend-production.up.railway.app"
+    origin: "https://main.d39m47j0tu1pds.amplifyapp.com"
 }));
 app.use(express.json());
 
